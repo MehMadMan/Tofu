@@ -1,5 +1,13 @@
+data "aws_ami" "latest_amzn2_ami" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+}
 resource "aws_instance" "ec2_instance" {          #ec2 for hosting wordpress
-  ami                         = var.ec2-ami-linux #AMI for linux instance
+  ami                         = data.aws_ami.latest_amzn2_ami.id #AMI for linux instance
   instance_type               = "t2.micro"        #Free tier t2.micro instance
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.ec2-wordpress-sg.id]

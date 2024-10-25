@@ -5,3 +5,9 @@ output "instance_arn" {
 output "public-ip" {
   value = "http://${aws_instance.ec2_instance.public_ip}"
 }
+output "ami-name" {
+  value = data.aws_ami.latest_amzn2_ami.name
+}
+output "ami-id" {
+  value = data.aws_ami.latest_amzn2_ami.id
+}
