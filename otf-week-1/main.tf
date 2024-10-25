@@ -1,4 +1,4 @@
-data "aws_ami" "latest_amzn2_ami" {
+data "aws_ami" "latest_amzn2_ami" { #data block to search for aws-ami for linux 2 with hvm
   most_recent = true
   owners      = ["amazon"]
   filter {
@@ -6,7 +6,7 @@ data "aws_ami" "latest_amzn2_ami" {
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
-data "aws_vpc" "default" {
+data "aws_vpc" "default" { #to get the default vpc cider block
   filter {
     name   = "isDefault"
     values = ["true"]
@@ -24,7 +24,12 @@ resource "aws_instance" "ec2_instance" {                         #ec2 for hostin
                 amazon-linux-extras install docker -y
                 service docker start
                 usermod -a -G docker ec2-user
-                docker run -d -p 80:80 nginx
+                docker run -d \
+                -e WORDPRESS_DB_HOST=${aws_db_instance.db_mariadb.address}
+                -e WORDPRESS_DB_USER=${aws_db_instance.db_mariadb.username}
+                -e WORDPRESS_DB_PASSWORD=${aws_db_instance.db_mariadb.password}
+                -e WORDPRESS_DB_NAME=${aws_db_instance.db_mariadb.db_name}
+                -p 80:80 ${var.image.name}:${var.image.tag}
                 EOF
   tags = {
     Name = "${var.name-prefix}-ec2instance"
