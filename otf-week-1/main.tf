@@ -1,4 +1,4 @@
-data "aws_ami" "latest_amzn2_ami" { #data block to search for aws-ami for linux 2 with hvm
+data "aws_ami" "latest_amzn2_ami" {
   most_recent = true
   owners      = ["amazon"]
   filter {
@@ -6,7 +6,7 @@ data "aws_ami" "latest_amzn2_ami" { #data block to search for aws-ami for linux 
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
-data "aws_vpc" "default" { #to get the default vpc cider block
+data "aws_vpc" "default_vpc" {
   filter {
     name   = "isDefault"
     values = ["true"]
@@ -16,7 +16,8 @@ resource "aws_instance" "ec2_instance" {                         #ec2 for hostin
   ami                         = data.aws_ami.latest_amzn2_ami.id #AMI for linux instance
   instance_type               = "t2.micro"                       #Free tier t2.micro instance
   associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.ec2-wordpress-sg.id]
+  vpc_security_group_ids = [aws_security_group.ec2-wordpress-sg.id,
+                            aws_security_group.mariadb_sg.id]
   #wordpress deployment
   user_data = <<-EOF
                 #!/bin/bash
@@ -24,12 +25,7 @@ resource "aws_instance" "ec2_instance" {                         #ec2 for hostin
                 amazon-linux-extras install docker -y
                 service docker start
                 usermod -a -G docker ec2-user
-                docker run -d \
-                  -e WORDPRESS_DB_HOST=${aws_db_instance.db_mariadb.address}
-                  -e WORDPRESS_DB_USER=${aws_db_instance.db_mariadb.username}
-                  -e WORDPRESS_DB_PASSWORD=${aws_db_instance.db_mariadb.password}
-                  -e WORDPRESS_DB_NAME=${aws_db_instance.db_mariadb.db_name}
-                  -p 80:80 ${var.image.name}:${var.image.tag}
+                docker run -d -p 80:80 nginx
                 EOF
   tags = {
     Name = "${var.name-prefix}-ec2instance"
@@ -54,13 +50,7 @@ resource "aws_security_group" "ec2-wordpress-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Allow from anywhere (replace with a specific IP range for better security)
   }
-  ingress {
-    description = "mariadb port"
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = concat([data.aws_vpc.default.cidr_block]) # mariadb instance
-  }
+
   # Needs to be able to get to docker hub to download images
   egress {
     from_port   = 0
@@ -69,16 +59,15 @@ resource "aws_security_group" "ec2-wordpress-sg" {
     cidr_blocks = ["0.0.0.0/0"] # Allow all outbound traffic
   }
 }
-resource "aws_db_instance" "db_mariadb" {
-  identifier        = "${var.name-prefix}-mariadb"
-  instance_class    = "db.t3.micro"
-  allocated_storage = "20"
-  engine            = "mariadb"
-  engine_version    = "10.6"
+resource "aws_security_group" "mariadb_sg" {
+  name        = "${var.name-prefix}=mariadb-sg"
+  description = "sg for maria db to access the 3306 from ec2"
 
-  db_name  = "worpress"
-  username = "admin"
-  password = "password"
-
-  skip_final_snapshot = true
+  ingress {
+    description = "3306 ingress permission"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = [concat([data.aws_vpc.default_vpc.id])]
+  }
 }
