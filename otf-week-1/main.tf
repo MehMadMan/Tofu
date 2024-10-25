@@ -20,13 +20,18 @@ resource "aws_instance" "ec2_instance" {                         #ec2 for hostin
   aws_security_group.mariadb_sg.id]
   #wordpress deployment
   user_data = <<-EOF
-                #!/bin/bash
-                yum update -y
-                amazon-linux-extras install docker -y
-                service docker start
-                usermod -a -G docker ec2-user
-                docker run -d -p 80:80 nginx
-                EOF
+              #!/bin/bash
+              yum update -y
+              amazon-linux-extras install docker -y
+              service docker start
+              usermod -a -G docker ec2-user
+              docker run -d \
+                -e WORDPRESS_DB_HOST=${aws_db_instance.mariadb.endpoint} \
+                -e WORDPRESS_DB_USER=${aws_db_instance.mariadb.username} \
+                -e WORDPRESS_DB_PASSWORD=${aws_db_instance.mariadb.password} \
+                -e WORDPRESS_DB_NAME=${aws_db_instance.mariadb.db_name} \
+                -p 80:80 ${var.image.name}:${var.image.tag}
+              EOF
   tags = {
     Name = "${var.name-prefix}-ec2instance"
 
