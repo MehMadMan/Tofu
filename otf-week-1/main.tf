@@ -25,11 +25,11 @@ resource "aws_instance" "ec2_instance" {                         #ec2 for hostin
                 service docker start
                 usermod -a -G docker ec2-user
                 docker run -d \
-                -e WORDPRESS_DB_HOST=${aws_db_instance.db_mariadb.address}
-                -e WORDPRESS_DB_USER=${aws_db_instance.db_mariadb.username}
-                -e WORDPRESS_DB_PASSWORD=${aws_db_instance.db_mariadb.password}
-                -e WORDPRESS_DB_NAME=${aws_db_instance.db_mariadb.db_name}
-                -p 80:80 ${var.image.name}:${var.image.tag}
+                  -e WORDPRESS_DB_HOST=${aws_db_instance.db_mariadb.address}
+                  -e WORDPRESS_DB_USER=${aws_db_instance.db_mariadb.username}
+                  -e WORDPRESS_DB_PASSWORD=${aws_db_instance.db_mariadb.password}
+                  -e WORDPRESS_DB_NAME=${aws_db_instance.db_mariadb.db_name}
+                  -p 80:80 ${var.image.name}:${var.image.tag}
                 EOF
   tags = {
     Name = "${var.name-prefix}-ec2instance"
