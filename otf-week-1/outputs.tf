@@ -12,5 +12,5 @@ output "ami-id" {
   value = data.aws_ami.latest_amzn2_ami.id
 }
 output "default-vpc-cidr" {
-  value = data.aws_vpc.default.cidr_block
+  value = data.aws_vpc.default_vpc.cidr_block
 }

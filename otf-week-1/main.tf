@@ -17,7 +17,7 @@ resource "aws_instance" "ec2_instance" {                         #ec2 for hostin
   instance_type               = "t2.micro"                       #Free tier t2.micro instance
   associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.ec2-wordpress-sg.id,
-                            aws_security_group.mariadb_sg.id]
+  aws_security_group.mariadb_sg.id]
   #wordpress deployment
   user_data = <<-EOF
                 #!/bin/bash
@@ -68,6 +68,6 @@ resource "aws_security_group" "mariadb_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = [concat([data.aws_vpc.default_vpc.id])]
+    cidr_blocks = [data.aws_vpc.default_vpc.cidr_block]
   }
 }
