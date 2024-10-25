@@ -32,6 +32,20 @@ resource "aws_instance" "ec2_instance" {                         #ec2 for hostin
 
   }
 }
+resource "aws_db_instance" "mariadb" {
+  identifier = "${var.name-prefix}-mariadb-instance"
+  instance_class = "db.t3.micro"#same free and t2 marco
+  allocated_storage = 20
+  engine            = "mariadb"
+  engine_version    = "10.6"
+  db_name           = "wordpress" # logical database name
+
+  username               = "admin"
+  password               = "yourpassword"
+  vpc_security_group_ids = [aws_security_group.mariadb_sg.id]
+  skip_final_snapshot    = true
+}
+
 resource "aws_security_group" "ec2-wordpress-sg" {
   name        = "${var.name-prefix}-ec2-sg"
   description = "security group to allow egress and ingress"
