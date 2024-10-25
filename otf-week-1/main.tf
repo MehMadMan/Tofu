@@ -26,7 +26,7 @@ resource "aws_instance" "ec2_instance" {                         #ec2 for hostin
               service docker start
               usermod -a -G docker ec2-user
               docker run -d \
-                -e WORDPRESS_DB_HOST=${aws_db_instance.mariadb.endpoint} \
+                -e WORDPRESS_DB_HOST=${aws_db_instance.mariadb.address} \
                 -e WORDPRESS_DB_USER=${aws_db_instance.mariadb.username} \
                 -e WORDPRESS_DB_PASSWORD=${aws_db_instance.mariadb.password} \
                 -e WORDPRESS_DB_NAME=${aws_db_instance.mariadb.db_name} \
@@ -81,7 +81,6 @@ resource "aws_security_group" "ec2-wordpress-sg" {
 resource "aws_security_group" "mariadb_sg" {
   name        = "${var.name-prefix}=mariadb-sg"
   description = "sg for maria db to access the 3306 from ec2"
-
   ingress {
     description = "3306 ingress permission"
     from_port   = 3306
