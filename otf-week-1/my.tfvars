@@ -1,1 +1,1 @@
-name-prefix   = "week-1"
+name-prefix = "week-1"

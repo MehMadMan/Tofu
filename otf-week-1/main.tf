@@ -6,9 +6,15 @@ data "aws_ami" "latest_amzn2_ami" {
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
-resource "aws_instance" "ec2_instance" {          #ec2 for hosting wordpress
+data "aws_vpc" "default" {
+  filter {
+    name   = "isDefault"
+    values = ["true"]
+  }
+}
+resource "aws_instance" "ec2_instance" {                         #ec2 for hosting wordpress
   ami                         = data.aws_ami.latest_amzn2_ami.id #AMI for linux instance
-  instance_type               = "t2.micro"        #Free tier t2.micro instance
+  instance_type               = "t2.micro"                       #Free tier t2.micro instance
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.ec2-wordpress-sg.id]
   #wordpress deployment
@@ -43,7 +49,13 @@ resource "aws_security_group" "ec2-wordpress-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Allow from anywhere (replace with a specific IP range for better security)
   }
-
+  ingress {
+    description = "mariadb port"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = concat([data.aws_vpc.default.cidr_block]) # mariadb instance
+  }
   # Needs to be able to get to docker hub to download images
   egress {
     from_port   = 0
@@ -51,4 +63,17 @@ resource "aws_security_group" "ec2-wordpress-sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"] # Allow all outbound traffic
   }
+}
+resource "aws_db_instance" "db_mariadb" {
+  identifier        = "${var.name-prefix}-mariadb"
+  instance_class    = "db.t3.micro"
+  allocated_storage = "20"
+  engine            = "mariadb"
+  engine_version    = "10.6"
+
+  db_name  = "worpress"
+  username = "admin"
+  password = "password"
+
+  skip_final_snapshot = true
 }

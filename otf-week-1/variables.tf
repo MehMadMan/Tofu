@@ -5,7 +5,7 @@ variable "name-prefix" {
 variable "image" {
   type = object({
     name = string
-    tag = string
+    tag  = string
   })
   default = {
     name = "ngnix"
