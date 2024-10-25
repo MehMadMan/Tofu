@@ -2,7 +2,7 @@ resource "aws_instance" "ec2_instance" {          #ec2 for hosting wordpress
   ami                         = var.ec2-ami-linux #AMI for linux instance
   instance_type               = "t2.micro"        #Free tier t2.micro instance
   associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.ec2-instance-sg.id]
+  vpc_security_group_ids      = [aws_security_group.ec2-wordpress-sg.id]
   #wordpress deployment
   user_data = <<-EOF
                 #!/bin/bash
