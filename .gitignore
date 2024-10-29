@@ -5,8 +5,6 @@
 /otf-week-2/.terraform.lock.hcl
 /otf-week-2/terraform.tfstate
 /otf-week-2/terraform.tfstate.backup
-/otf-week-1/.terraform/
 /otf-week-1/.terraform.lock.hcl
 /otf-week-1/terraform.tfstate.backup
 /otf-week-1/terraform.tfstate
-/qodana.yaml
