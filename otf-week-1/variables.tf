@@ -8,7 +8,7 @@ variable "image" {
     tag  = string
   })
   default = {
-    name = "ngnix"
+    name = "wordpress"
     tag  = "latest"
   }
 }
