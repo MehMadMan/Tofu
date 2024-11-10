@@ -39,3 +39,4 @@ terraform.rc
 *.ovpn
 *.key
 .pub
+*/client-configs
