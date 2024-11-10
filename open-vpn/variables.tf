@@ -7,6 +7,6 @@ variable "key_name" {
   description = "Name of the key pair"
 }
 variable "instance_type" {
-  type = string
+  type        = string
   description = "sku which will be used"
 }

@@ -8,7 +8,46 @@ data "aws_ami" "openvpn" {
 
   owners = ["amazon"]
 }
+locals {
+  security_group_rules = {
+    "http" = {
+      type        = "ingress"
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    "allow egress to internet" = {
+      type        = "egress"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    "Allow OpenVPN" = {
+      type        = "ingress"
+      from_port   = 1194
+      to_port     = 1194
+      protocol    = "udp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
 
+    "Allow HTTPS" = {
+      type        = "ingress"
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    "Allow SSH" = {
+      type        = "ingress"
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+}
 resource "aws_instance" "openvpn_server" {
   ami                         = data.aws_ami.openvpn.id
   instance_type               = var.instance_type
@@ -111,8 +150,8 @@ resource "aws_instance" "openvpn_server" {
 resource "aws_security_group" "openvpn_sg" {
   name        = "${var.name_prefix}-openvpn-sg"
   description = "Security group for OpenVPN server"
-  
-  ingress {
+
+  /*   ingress {
     description = "Allow OpenVPN"
     from_port   = 1194
     to_port     = 1194
@@ -141,5 +180,16 @@ resource "aws_security_group" "openvpn_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-  }
+  } */
+}
+resource "aws_security_group_rule" "rules_assigment" {
+  for_each = local.security_group_rules
+
+  security_group_id = aws_security_group.openvpn_sg.id
+  description       = each.key
+  type              = each.value.type
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  protocol          = each.value.protocol
+  cidr_blocks       = each.value.cidr_blocks
 }
